@@ -2,6 +2,7 @@ use crate::ui;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::DefaultTerminal;
+use std::process::Command;
 
 #[derive(Debug)]
 pub struct Pair {
@@ -93,13 +94,27 @@ impl App {
         }
     }
 
+    fn parse_web_browser() -> String {
+        let output = Command::new("xdg-settings")
+            .args(["get", "default-web-browser"])
+            .output()
+            .expect("Failed to find default browser");
+
+        let browser = std::str::from_utf8(&output.stdout)
+            .expect("Failed to get UTF-8 data from output")
+            .trim();
+
+        browser.split(".").next().unwrap().to_string()
+    }
+
     fn web_search(&mut self) {
+        let browser = Self::parse_web_browser();
         if let Some(pair) = self.pairs.get(self.selected) {
-            let full_url = &format!("{}{}", pair.url, self.search_content);
-            std::process::Command::new("sh")
-                .args(["xdg-open", full_url])
+            let full_url = format!("{}{}", pair.url, self.search_content);
+            std::process::Command::new(browser)
+                .arg(full_url)
                 .spawn()
-                .expect("Failed to open URL.");
+                .expect("Failed to open URL");
             self.exit = true;
         }
     }
