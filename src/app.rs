@@ -111,9 +111,10 @@ impl App {
         let browser = Self::parse_web_browser();
         if let Some(pair) = self.pairs.get(self.selected) {
             let full_url = format!("{}{}", pair.url, self.search_content);
-            std::process::Command::new(browser)
-                .arg(full_url)
-                .spawn()
+
+            let _ = std::process::Command::new(browser)
+                .arg(&full_url)
+                .status()
                 .expect("Failed to open URL");
             self.exit = true;
         }
