@@ -108,15 +108,21 @@ impl App {
     }
 
     fn web_search(&mut self) {
-        let browser = Self::parse_web_browser();
-        if let Some(pair) = self.pairs.get(self.selected) {
-            let full_url = format!("{}{}", pair.url, self.search_content);
+        let Some(pair) = self.pairs.get(self.selected) else {
+            eprintln!("URL not found");
+            return;
+        };
 
-            let _ = std::process::Command::new(browser)
-                .arg(&full_url)
-                .status()
-                .expect("Failed to open URL");
-            self.exit = true;
+        let browser = Self::parse_web_browser();
+        let full_url = format!("{}{}", pair.url, self.search_content);
+
+        let status =
+            std::process::Command::new(browser).arg(&full_url).status();
+        if let Err(error) = status {
+            eprintln!("Failed to open URL: {}", error);
+            return;
         }
+
+        self.exit = true;
     }
 }
