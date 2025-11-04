@@ -8,6 +8,11 @@ use ratatui::{
     widgets::{Block, List, Paragraph},
 };
 
+struct TextColors {
+    foreground: Color,
+    background: Color,
+}
+
 pub fn render(app: &App, frame: &mut Frame) {
     let constraints = [Constraint::Max(2), Constraint::Fill(1)];
 
@@ -42,11 +47,11 @@ fn render_options(app: &App, frame: &mut Frame, area: Rect) {
     let options_block = Block::default().title("");
 
     app.pairs.iter().enumerate().for_each(|(index, pair)| {
-        let (foreground, background) = get_colors(app.selected, index);
+        let colors = get_colors(app.selected, index);
 
         search_items.push(Line::from(Span::styled(
             pair.name,
-            Style::default().fg(foreground).bg(background),
+            Style::default().fg(colors.foreground).bg(colors.background),
         )));
     });
 
@@ -54,11 +59,17 @@ fn render_options(app: &App, frame: &mut Frame, area: Rect) {
     frame.render_widget(options_list, area);
 }
 
-fn get_colors(selected: usize, index: usize) -> (Color, Color) {
+fn get_colors(selected: usize, index: usize) -> TextColors {
     if index == selected {
-        (Color::DarkGray, Color::LightYellow)
+        TextColors {
+            foreground: Color::Black,
+            background: Color::LightYellow,
+        }
     } else {
-        (Color::LightYellow, Color::Reset)
+        TextColors {
+            foreground: Color::LightYellow,
+            background: Color::Reset,
+        }
     }
 }
 
