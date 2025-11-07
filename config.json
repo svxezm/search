@@ -1,0 +1,28 @@
+{
+  "pages": [
+    {
+      "name": "DuckDuckGo",
+      "url": "https://duckduckgo.com/?q="
+    },
+    {
+      "name": "URL Search",
+      "url": ""
+    },
+    {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/"
+    },
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com/results?search_query="
+    },
+    {
+      "name": "Rust Documentation",
+      "url": "https://doc.rust-lang.org/stable/"
+    },
+    {
+      "name": "Rust Crates",
+      "url": "https://crates.io/crates/"
+    }
+  ]
+}
