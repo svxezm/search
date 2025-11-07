@@ -2,17 +2,23 @@ use crate::ui;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::DefaultTerminal;
+use serde::Deserialize;
 use std::process::Command;
 
-#[derive(Debug)]
-pub struct Pair {
-    pub name: &'static str,
-    pub url: &'static str,
+#[derive(Deserialize, Debug)]
+struct Config {
+    pages: Vec<Page>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Page {
+    pub name: String,
+    pub url: String,
 }
 
 #[derive(Debug)]
 pub struct App {
-    pub pairs: Vec<Pair>,
+    pub pages: Vec<Page>,
     pub selected: usize,
     pub search_content: String,
     exit: bool,
@@ -20,27 +26,33 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let entries = vec![
-            ("DuckDuckGo", "https://duckduckgo.com/?q="),
-            ("URL Search", ""),
-            ("Wikipedia", "https://en.wikipedia.org/wiki/"),
-            ("YouTube", "https://www.youtube.com/results?search_query="),
-            ("Rust Documentation", "https://doc.rust-lang.org/stable/"),
-            ("Rust Crates", "https://crates.io/crates/"),
-        ];
+        let entries = Self::parse_config();
 
-        let mut pairs: Vec<Pair> = Vec::new();
-        for (name, url) in entries.iter() {
-            let pair = Pair { name, url };
-            pairs.push(pair);
-        }
+        let pages: Vec<Page> = entries
+            .pages
+            .iter()
+            .map(|entry| Page {
+                name: entry.name.to_owned(),
+                url: entry.url.to_owned(),
+            })
+            .collect();
 
         Self {
-            pairs,
+            pages,
             selected: 0,
             search_content: String::new(),
             exit: false,
         }
+    }
+
+    fn parse_config() -> Config {
+        let json_data = std::fs::read_to_string("config.json")
+            .expect("Failed to read configuration content");
+
+        let pages: Config = serde_json::from_str(&json_data)
+            .expect("Failed to parse configuration content");
+
+        pages
     }
 
     pub fn run(
@@ -82,13 +94,13 @@ impl App {
 
     fn select_previous(&mut self) {
         self.selected = match self.selected == 0 {
-            true => self.pairs.len() - 1,
+            true => self.pages.len() - 1,
             false => self.selected - 1,
         }
     }
 
     fn select_next(&mut self) {
-        self.selected = match self.selected == self.pairs.len() - 1 {
+        self.selected = match self.selected == self.pages.len() - 1 {
             true => 0,
             false => self.selected + 1,
         }
@@ -108,13 +120,13 @@ impl App {
     }
 
     fn web_search(&mut self) {
-        let Some(pair) = self.pairs.get(self.selected) else {
+        let Some(page) = self.pages.get(self.selected) else {
             eprintln!("URL not found");
             return;
         };
 
         let browser = Self::parse_web_browser();
-        let full_url = format!("{}{}", pair.url, self.search_content);
+        let full_url = format!("{}{}", page.url, self.search_content);
 
         let status =
             std::process::Command::new(browser).arg(&full_url).status();
