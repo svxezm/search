@@ -46,11 +46,11 @@ fn render_options(app: &App, frame: &mut Frame, area: Rect) {
     let mut search_items = Vec::<Line>::new();
     let options_block = Block::default().title("");
 
-    app.pairs.iter().enumerate().for_each(|(index, pair)| {
+    app.pages.iter().enumerate().for_each(|(index, page)| {
         let colors = get_colors(app.selected, index);
 
         search_items.push(Line::from(Span::styled(
-            pair.name,
+            &page.name,
             Style::default().fg(colors.foreground).bg(colors.background),
         )));
     });
